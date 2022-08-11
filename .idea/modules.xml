@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$USER_HOME$/git/.idea/ECAFIR.iml" filepath="$USER_HOME$/git/.idea/ECAFIR.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/Finance_control.iml" filepath="$PROJECT_DIR$/.idea/Finance_control.iml" />
+      <module fileurl="file://$USER_HOME$/Documents/GitHub/Openbootcamp/.idea/Openbootcamp.iml" filepath="$USER_HOME$/Documents/GitHub/Openbootcamp/.idea/Openbootcamp.iml" />
     </modules>
   </component>
 </project>

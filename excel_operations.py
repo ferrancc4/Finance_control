@@ -11,6 +11,8 @@ def listexcel():
     # Llistem els excels amb glob i creem un esdeveniment amb tkinter per sel·lecionar la carpeta
 
     window = tk.Tk()
+    # Fer invisible la finestra
+    window.withdraw()
     screen_width = window.winfo_screenwidth()
     screen_height = window.winfo_screenheight()
     # calculate position x and y coordinates
@@ -18,7 +20,7 @@ def listexcel():
     y = round((screen_height / 2) - (300 / 2))
     window.geometry(f'550x350+{x}+{y}')
 
-    filepath = tk.filedialog.askdirectory(initialdir=r"C:\Users\ferra\OneDrive\Tesla\Economia", title="Select folder")
+    filepath = tk.filedialog.askdirectory(parent=window, initialdir=r"C:\Users\ferra\OneDrive\Tesla\Economia", title="Select folder")
     window.destroy()
     window.mainloop()
 
