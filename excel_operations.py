@@ -5,29 +5,7 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font
 import Diccionari
 
-
-# Llistar els excels d'una carpeta
-def listexcel():
-    # Llistem els excels amb glob i creem un esdeveniment amb tkinter per sel·lecionar la carpeta
-
-    window = tk.Tk()
-    # Fer invisible la finestra
-    window.withdraw()
-    screen_width = window.winfo_screenwidth()
-    screen_height = window.winfo_screenheight()
-    # calculate position x and y coordinates
-    x = round((screen_width / 2) - (600 / 2))
-    y = round((screen_height / 2) - (300 / 2))
-    window.geometry(f'550x350+{x}+{y}')
-
-    filepath = tk.filedialog.askdirectory(parent=window, initialdir=r"C:\Users\ferra\OneDrive\Tesla\Economia", title="Select folder")
-    window.destroy()
-    window.mainloop()
-
-    file_list = glob.glob(filepath + '/*.xlsx')
-    return file_list
-
-
+fulla_excel =""
 # Funcio iterar concepte per classificarlo
 
 def check_concept(diccionari, excel):
@@ -38,7 +16,7 @@ def check_concept(diccionari, excel):
         selection = widget.curselection()
         valor_clas = widget.get(selection[0])
         ws_act.cell(row=j, column=5).value = valor_clas
-        excel.save(filename='/EstatComptes.xlsx')
+        excel.save(filename='C:/Users/ferra/OneDrive/Tesla/Economia/EstatComptes.xlsx')
 
     # Classificació dels conseptes per cada una de les fulles
     ws_act = excel.active
@@ -121,7 +99,7 @@ def check_concept(diccionari, excel):
 # A partir d'una llista d'excels els agrupa en un excel
 def combiexcel(llista):
     # Carreguem l'excel de comptes
-    ex_comptes = load_workbook('/EstatComptes.xlsx')
+    ex_comptes = load_workbook('C:/Users/ferra/OneDrive/Tesla/Economia/EstatComptes.xlsx')
     for document in llista:
         # Carreguem l'excel del banc
         ex_caixa = load_workbook(document)
@@ -129,7 +107,7 @@ def combiexcel(llista):
 
         # Creació fulla segons el mes
         data_mes = str(sheet_caixa['B4'].value)[0:10].split('-')[1]
-        nom_fulla = Diccionari.mes.get(data_mes)
+        fulla_excel = nom_fulla = Diccionari.mes.get(data_mes)
         if nom_fulla not in ex_comptes.sheetnames:
             ws1 = ex_comptes.create_sheet(nom_fulla)
             ws1.title = nom_fulla
@@ -177,22 +155,22 @@ def combiexcel(llista):
             d1.font = Font(bold=True, size=15)
             e1.font = Font(bold=True, size=15)
 
-            check_concept(Diccionari.classificació, ex_comptes)
+            # check_concept(Diccionari.classificació, ex_comptes)
+            #
+            # # filtres
+            # maxrow = ws2.max_row
+            # ws2.auto_filter.ref = f"A1:E{maxrow}"
+            # ws2.auto_filter.add_filter_column(5, ["Menja", "Compres", "Transport"])
+            # ws2.auto_filter.add_sort_condition(f"B2:B{maxrow}")
+            #
+            # #Taula resum
+            # sheet1 = ex_comptes['Gener']
+            # for i in range(2, 20):
+            #     for j in range(7, 9):
+            #         ws2.cell(row=i, column=j).value = sheet1.cell(row=i, column=j).value
+            # # Cel·la estalvis
+            # ws2['H19'] = f'=D{maxrow}-D2'
 
-            # filtres
-            maxrow = ws2.max_row
-            ws2.auto_filter.ref = f"A1:E{maxrow}"
-            ws2.auto_filter.add_filter_column(5, ["Menja", "Compres", "Transport"])
-            ws2.auto_filter.add_sort_condition(f"B2:B{maxrow}")
-
-            #Taula resum
-            sheet1 = ex_comptes['Gener']
-            for i in range(2, 20):
-                for j in range(7, 9):
-                    ws2.cell(row=i, column=j).value = sheet1.cell(row=i, column=j).value
-            # Cel·la estalvis
-            ws2['H19'] = f'=D{maxrow}-D2'
 
 
-
-        ex_comptes.save(filename='/EstatComptes.xlsx')
+        ex_comptes.save(filename='C:/Users/ferra/OneDrive/Tesla/Economia/EstatComptes.xlsx')
