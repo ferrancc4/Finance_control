@@ -1,7 +1,8 @@
 import GUI
 
 def main():
-    app = GUI.startWindow()
+    w1 = GUI.startWindow()
+    w2 = GUI.secondWindow(w1)
 
 
 if __name__ == "__main__":
