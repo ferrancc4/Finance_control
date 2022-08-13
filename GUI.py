@@ -88,25 +88,32 @@ class startWindow:
         # Esdeveniment amb bind per poder moure la finestra
 
         def move_window(event):
+            """Dotar de moviment a la finestra"""
             self.arrel.geometry('+{0}+{1}'.format(event.x_root, event.y_root))
 
         # Els botons canvien de color al passar per damunt
         def change_on_hovering(event):
+            """El botó canvia de color al passar per sobre"""
             close_button.configure(bg='red')
 
         def change_search_on_hovering(event):
+            """El botó canvia de color al passar per sobre"""
             search_button.configure(bg='black', fg='white')
 
         def change_continue_on_hovering(event):
+            """El botó canvia de color al passar per sobre"""
             continue_button.configure(bg='black', fg='white')
 
         def return_to_normal_state(event):
+            """El botó torna al seu estat inicial"""
             close_button.configure(bg=back_ground)
 
         def return_search_to_normal_state(event):
+            """El botó torna al seu estat inicial"""
             search_button.configure(bg='#b5b5b5', fg='black')
 
         def return_continue_to_normal_state(event):
+            """El botó torna al seu estat inicial"""
             continue_button.configure(bg='#b5b5b5', fg='black')
 
         title_barframe.bind('<B1-Motion>', move_window)
@@ -143,7 +150,7 @@ class secondWindow(startWindow):
         classificarlos """
         self.ws_act = excel.active
 
-        # iterem per cada una de les files
+        # iterem per cada una de les files de l'excel i assignem un concepte
         for j in range(2, self.ws_act.max_row + 1):
             concept = str(self.ws_act.cell(row=j, column=1).value).lower()
             # iterem pel diccionari de conceptes
@@ -160,42 +167,42 @@ class secondWindow(startWindow):
         self.sw.rowconfigure(0, weight=1)
         self.sw.columnconfigure(0, weight=1)
 
-        amplada_finestra = 900
-        altura_finestra = 700
+        self.amplada_finestra = 900
+        self.altura_finestra = 700
         amplada_monitor = self.sw.winfo_screenwidth()
         altura_monitor = self.sw.winfo_screenheight()
-        x = round(amplada_monitor / 2 - amplada_finestra / 2)
-        y = round((altura_monitor - 50) / 2 - altura_finestra / 2)
+        x = round(amplada_monitor / 2 - self.amplada_finestra / 2)
+        y = round((altura_monitor - 50) / 2 - self.altura_finestra / 2)
 
-        self.sw.geometry(f'{amplada_finestra}x{altura_finestra}+{x}+{y}')
+        self.sw.geometry(f'{self.amplada_finestra}x{self.altura_finestra}+{x}+{y}')
 
         # Frames
         # Creem un frame general
-        self.frame_main = tk.Frame(self.sw, bg="gray", width=amplada_finestra, height=altura_finestra)
+        self.frame_main = tk.Frame(self.sw, bg="gray", width=self.amplada_finestra, height=self.altura_finestra)
         self.frame_main.grid(sticky=tk.NSEW)
         # Crea un frame per a la barra nova de títol
         back_ground = '#1d1d1d'
-        title_barframe = tk.Frame(self.frame_main, width=amplada_finestra, height=20, bg=back_ground, relief='raised', bd=1,
+        title_barframe = tk.Frame(self.frame_main, width=self.amplada_finestra, height=20, bg=back_ground, relief='raised', bd=1,
                                   pady=3, highlightcolor=back_ground, highlightthickness=0)
         # crear frame per al botó tancar
         close_frame = tk.Frame(self.frame_main, bg=back_ground, width=10, height=10, relief='raised', bd=1,
                                highlightcolor=back_ground, highlightthickness=0)
-
         # Crea un frame gestió excel
         gestio_frame = tk.Frame(self.frame_main, bg=back_ground)
-
         # Creem un frame per al canvas que allotjarà la taula
         self.canvas_frame =tk.Frame(self.frame_main, bg=back_ground)
+        # Crear frame botons part baixa finestra
+        self.fbuttons = tk.Frame(self.frame_main, bg=back_ground)
 
         # Grid Frames
         title_barframe.grid(row=0, sticky=tk.EW)
         close_frame.grid(row=0, sticky=tk.NE)
-        gestio_frame.grid(row=1, sticky=tk.NSEW)
-        self.canvas_frame.grid(row=2, column=0, sticky=tk.NSEW)
+        gestio_frame.grid(row=1, sticky=tk.EW)
+        self.canvas_frame.grid(row=2, column=0, sticky=tk.EW)
         self.canvas_frame.rowconfigure(0, weight=1)
         self.canvas_frame.columnconfigure(0, weight=1)
         self.canvas_frame.grid_propagate(False)
-
+        self.fbuttons.grid(row=3, sticky=tk.EW)
         # Widggets
         # Títol finestra
         title_name = tk.Label(title_barframe, text="Financial Control", bg=back_ground, fg='white')
@@ -211,21 +218,24 @@ class secondWindow(startWindow):
         label_mes = tk.Label(gestio_frame, text=self.nom_fulla,
                              font=font.Font(family="Helvetica", size=25, weight="bold"),
                              padx=20, pady=10, bg=back_ground, fg='white')
-
+        nouconcepte = tk.Button(self.fbuttons, text="Nova classe i/o concepte", bg=back_ground, fg='white')
         # Grid widgets
-        title_name.grid(row=0, column=0, columnspan=7, sticky=tk.NS)
+        title_name.grid(row=0, column=0, sticky=tk.NS)
         close_button.grid(sticky=tk.NE)
         label_gestionant.pack(fill=tk.X)
         label_mes.pack(fill=tk.X)
+        nouconcepte.pack(side='left')
 
         def move_window(event):
+            """Dotar de moviment a la finestra"""
             self.sw.geometry('+{0}+{1}'.format(event.x_root, event.y_root))
 
-        # Els botons canvien de color al passar per damunt
         def change_on_hovering(event):
+            """El botó canvia de color al passar per sobre"""
             close_button.configure(bg='red')
 
         def return_to_normal_state(event):
+            """El botó torna al seu estat inicial"""
             close_button.configure(bg=back_ground)
 
         title_barframe.bind('<B1-Motion>', move_window)
@@ -245,69 +255,74 @@ class secondWindow(startWindow):
         self.sw.mainloop()
 
     def taula(self, diccionari):
+        """Crea la taula dels conceptes per classificar"""
         # creem un canvas per allotjar la scrollbar
-        # Add a canvas in that frame
-        canvas = tk.Canvas(self.canvas_frame, bg="white")
+        # Creem un canvas al frame canvas
+        canvas = tk.Canvas(self.canvas_frame, bg='#1d1d1d')
         canvas.grid(row=0, column=0, sticky=tk.NSEW)
-
-        # Link a scrollbar to the canvas
+        # fiquem el scrolbar al frame canvas
         vsb = tk.Scrollbar(self.canvas_frame, orient="vertical", command=canvas.yview)
         vsb.grid(row=0, column=1, sticky=tk.NS)
         canvas.configure(yscrollcommand=vsb.set)
-
         # Crea un frame per la taula de conceptes
         self.con_frame = tk.Frame(canvas, bg='#1d1d1d')
-        canvas.create_window((0, 0), window=self.con_frame, anchor=tk.NW)
-
-        # Add 9-by-5 buttons to the frame
+        canvas.create_window((0, 0), window=self.con_frame, anchor=tk.NW, width=900)
+        # Afegim els títols de la taula i les files corresponents a conceptes sense classificar
         cb = '#1d1d1d'
         font_titol = font.Font(family="Helvetica", size=10, weight="bold")
         rows = len(self.rows)
-        columns = 4
+        columns = 5
         self.labels = [[tk.Label() for j in range(columns)] for i in range(rows)]
 
         self.labels[0][0] = tk.Label(self.con_frame, text="CONCEPTE", font=font_titol, bg=cb, fg='white')
-        self.labels[0][0].grid(row=0, column=0, sticky=tk.NSEW, ipadx=50, ipady=10)
+        self.labels[0][0].grid(row=0, column=0, ipadx=50, ipady=10)
         self.labels[0][1] = tk.Label(self.con_frame, text="DATA", font=font_titol, bg=cb, fg='white')
-        self.labels[0][1].grid(row=0, column=1, sticky=tk.NSEW, ipadx=50, ipady=10)
+        self.labels[0][1].grid(row=0, column=1, ipadx=50, ipady=10)
         self.labels[0][2] = tk.Label(self.con_frame, text="IMPORT", font=font_titol, bg=cb, fg='white')
-        self.labels[0][2].grid(row=0, column=2, sticky=tk.NSEW, ipadx=50, ipady=10)
+        self.labels[0][2].grid(row=0, column=2, ipadx=50, ipady=10)
         self.labels[0][3] = tk.Label(self.con_frame, text="CLASSIFICACIÓ", font=font_titol, bg=cb, fg='white')
-        self.labels[0][3].grid(row=0, column=3, sticky=tk.NSEW, ipadx=50, ipady=10)
-
+        self.labels[0][3].grid(row=0, column=3, ipadx=50, ipady=10)
         for i in range(1, rows):
             # taula
             font_lab = font.Font(family="Helvetica", size=9)
             self.labels[i][0] = tk.Label(self.con_frame, text=str(self.ws_act.cell(row=self.rows[i], column=1).value)[:18],
                                     font=font_lab, bg=cb, fg='white')
-            self.labels[i][0].grid(row=i, column=0, sticky=tk.NSEW, ipadx=70, ipady=10)
+            self.labels[i][0].grid(row=i, column=0, ipadx=70, ipady=10)
             self.labels[i][1] = tk.Label(self.con_frame, text=str(self.ws_act.cell(row=self.rows[i], column=2).value),
                                     font=font_lab, bg=cb, fg='white')
-            self.labels[i][1].grid(row=i, column=1, sticky=tk.NSEW, ipadx=70, ipady=10)
+            self.labels[i][1].grid(row=i, column=1, ipadx=70, ipady=10)
             self.labels[i][2] = tk.Label(self.con_frame, text=str(self.ws_act.cell(row=self.rows[i], column=3).value),
                                     font=font_lab, bg=cb, fg='white')
-            self.labels[i][2].grid(row=i, column=2, sticky=tk.NSEW, ipadx=70, ipady=10)
-
+            self.labels[i][2].grid(row=i, column=2, ipadx=70, ipady=10)
             llista_clas = list(diccionari.keys())
             variable = tk.StringVar(self.con_frame)
             variable.set("")
             self.opt = tk.OptionMenu(self.con_frame, variable, *llista_clas)
-            self.opt.config(font=font_lab, bg=cb, fg='white', padx=50, pady=7, highlightthickness=0, width=1)
-            self.opt.grid(row=i, column=3, sticky=tk.NSEW, ipadx=70, ipady=5)
-
+            self.opt.config(font=font_lab, bg=cb, fg='white', highlightthickness=0, width=1)
+            self.opt.grid(row=i, column=3, sticky=tk.EW, ipadx=70, ipady=5)
         # Update buttons frames idle tasks to let tkinter calculate buttons sizes
         self.con_frame.update_idletasks()
 
-        # Resize the canvas frame to show exactly 5-by-5 buttons and the scrollbar
-        columns_width = sum([self.labels[0][j].winfo_width() for j in range(0, 3)])
-        rows_height = sum([self.labels[i][0].winfo_height() for i in range(0, 10)])
-        self.canvas_frame.config(width=columns_width + vsb.winfo_width(),
-                            height=rows_height)
-
+        # Recalcul del canvas per que mostri totes les files de conceptes
+        nfiles = 0
+        if len(self.rows) >= 12:
+            nfiles = 12
+        else:
+            nfiles = len(self.rows)
+        columns_width = sum([self.labels[0][j].winfo_width() for j in range(0, 4)])
+        rows_height = sum([self.labels[i][0].winfo_height() for i in range(0, nfiles)])
+        extra_amplada = 0
+        extra_altura = 0
+        if columns_width < self.amplada_finestra:
+            extra_amplada = self.amplada_finestra - columns_width - 15
+            columns_width = columns_width + extra_amplada
+        if rows_height < self.altura_finestra - 100:
+            extra_altura= self.altura_finestra - rows_height - 185
+            rows_height = rows_height + extra_altura
+        self.canvas_frame.config(width=columns_width + vsb.winfo_width(), height=rows_height)
         # Set the canvas scrolling region
         canvas.config(scrollregion=canvas.bbox("all"))
 
-    # A partir d'una llista d'excels els agrupa en un excel
     def combiexcel(self, llista):
         """Afegeix els excels del banc a un de sol"""
         # Carreguem l'excel de comptes
