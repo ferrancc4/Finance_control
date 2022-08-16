@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 import glob
-import os
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from tkinter import ttk, filedialog
 import tkinter.font as font
 from openpyxl import load_workbook
 from openpyxl.styles import Font
+from copy import copy
 import Diccionari
 
 
@@ -143,7 +143,92 @@ class startWindow:
 class secondWindow(startWindow):
     """Segona finestra"""
 
-    # Funcio iterar concepte per classificarlo
+    def select_item(self, seleccio):
+        rows = len(self.rows)
+        zip_list = list(zip(self.rows, self.rows_taula))
+        for i in range(0, rows):
+            if seleccio == self.vconcept[i][3].get():
+                self.ws_act.cell(row=zip_list[i][0], column=5).value = seleccio
+        self.ex_comptes.save(filename='C:/Users/ferra/OneDrive/Tesla/Economia/EstatComptes.xlsx')
+    def taula(self, diccionari):
+        """Crea la taula dels conceptes per classificar"""
+        # creem un canvas per allotjar la scrollbar
+        # Creem un canvas al frame canvas
+        canvas = tk.Canvas(self.canvas_frame, bg='#1d1d1d')
+        canvas.grid(row=0, column=0, sticky=tk.NSEW)
+        # fiquem el scrolbar al frame canvas
+        vsb = tk.Scrollbar(self.canvas_frame, orient="vertical", command=canvas.yview)
+        vsb.grid(row=0, column=1, sticky=tk.NS)
+        canvas.configure(yscrollcommand=vsb.set)
+        # Crea un frame per la taula de conceptes
+        self.con_frame = tk.Frame(canvas, bg='#1d1d1d')
+        canvas.create_window((0, 0), window=self.con_frame, anchor=tk.NW, width=900)
+        # Afegim els títols de la taula i les files corresponents a conceptes sense classificar
+        cb = '#1d1d1d'
+        font_titol = font.Font(family="Helvetica", size=10, weight="bold")
+        rows = len(self.rows)
+
+        self.rows_taula = []
+        for i in range(1, rows + 1):
+            self.rows_taula.append(i)
+        columns = 4
+        # Per poder crear variables de la taula
+        self.labels = [[tk.Label() for j in range(columns)] for i in range(rows)]
+        llista_clas = list(diccionari.keys())
+        self.vconcept = [[tk.StringVar(self.con_frame) for j in range(columns)] for i in range(rows)]
+        self.opt = [[tk.OptionMenu(self.con_frame, self.vconcept[i][3], *llista_clas) for j in range(columns)] for i in
+                    range(rows)]
+
+        self.labels[0][0] = tk.Label(self.con_frame, text="CONCEPTE", font=font_titol, bg=cb, fg='white')
+        self.labels[0][0].grid(row=0, column=0, ipadx=50, ipady=10)
+        self.labels[0][1] = tk.Label(self.con_frame, text="DATA", font=font_titol, bg=cb, fg='white')
+        self.labels[0][1].grid(row=0, column=1, ipadx=50, ipady=10)
+        self.labels[0][2] = tk.Label(self.con_frame, text="IMPORT", font=font_titol, bg=cb, fg='white')
+        self.labels[0][2].grid(row=0, column=2, ipadx=50, ipady=10)
+        self.labels[0][3] = tk.Label(self.con_frame, text="CLASSIFICACIÓ", font=font_titol, bg=cb, fg='white')
+        self.labels[0][3].grid(row=0, column=3, ipadx=50, ipady=10)
+
+        self.vclist = []
+        for i in range(0, rows):
+            # taula
+            font_lab = font.Font(family="Helvetica", size=9)
+            self.labels[i][0] = tk.Label(self.con_frame, text=str(self.ws_act.cell(row=self.rows[i], column=1).value),
+                                         font=font_lab, bg=cb, fg='white')
+            self.labels[i][0].grid(row=i, column=0, ipadx=70, ipady=10)
+            self.labels[i][1] = tk.Label(self.con_frame, text=str(self.ws_act.cell(row=self.rows[i], column=2).value),
+                                         font=font_lab, bg=cb, fg='white')
+            self.labels[i][1].grid(row=i, column=1, ipadx=70, ipady=10)
+            self.labels[i][2] = tk.Label(self.con_frame, text=str(self.ws_act.cell(row=self.rows[i], column=3).value),
+                                         font=font_lab, bg=cb, fg='white')
+            self.labels[i][2].grid(row=i, column=2, ipadx=70, ipady=10)
+            self.vconcept[i][3] = tk.StringVar(self.con_frame)
+            self.vconcept[i][3].set(f'SELECT - {i}')
+            self.opt[i][3] = tk.OptionMenu(self.con_frame, self.vconcept[i][3], *llista_clas, command=self.select_item)
+            self.opt[i][3].config(font=font_lab, bg=cb, fg="white", highlightthickness=0, width=1)
+            self.opt[i][3].grid(row=i, column=3, sticky=tk.EW, ipadx=70, ipady=5)
+
+        # Update buttons frames idle tasks to let tkinter calculate buttons sizes
+        self.con_frame.update_idletasks()
+
+        # Recalcul del canvas per que mostri totes les files de conceptes
+        nfiles = 0
+        if len(self.rows) >= 12:
+            nfiles = 12
+        else:
+            nfiles = len(self.rows)
+        columns_width = sum([self.labels[0][j].winfo_width() for j in range(0, 4)])
+        rows_height = sum([self.labels[i][0].winfo_height() for i in range(0, nfiles)])
+        extra_amplada = 0
+        extra_altura = 0
+        if columns_width < self.amplada_finestra:
+            extra_amplada = self.amplada_finestra - columns_width - 15
+            columns_width = columns_width + extra_amplada
+        if rows_height < self.altura_finestra - 100:
+            extra_altura = self.altura_finestra - rows_height - 185
+            rows_height = rows_height + extra_altura
+        self.canvas_frame.config(width=columns_width + vsb.winfo_width(), height=rows_height)
+        # Set the canvas scrolling region
+        canvas.config(scrollregion=canvas.bbox("all"))
 
     def check_concept(self, excel):
         """Classifica els conceptes segons el diccionari i si no estan classificats crea una interfície per
@@ -182,7 +267,8 @@ class secondWindow(startWindow):
         self.frame_main.grid(sticky=tk.NSEW)
         # Crea un frame per a la barra nova de títol
         back_ground = '#1d1d1d'
-        title_barframe = tk.Frame(self.frame_main, width=self.amplada_finestra, height=20, bg=back_ground, relief='raised', bd=1,
+        title_barframe = tk.Frame(self.frame_main, width=self.amplada_finestra, height=20, bg=back_ground,
+                                  relief='raised', bd=1,
                                   pady=3, highlightcolor=back_ground, highlightthickness=0)
         # crear frame per al botó tancar
         close_frame = tk.Frame(self.frame_main, bg=back_ground, width=10, height=10, relief='raised', bd=1,
@@ -190,7 +276,7 @@ class secondWindow(startWindow):
         # Crea un frame gestió excel
         gestio_frame = tk.Frame(self.frame_main, bg=back_ground)
         # Creem un frame per al canvas que allotjarà la taula
-        self.canvas_frame =tk.Frame(self.frame_main, bg=back_ground)
+        self.canvas_frame = tk.Frame(self.frame_main, bg=back_ground)
         # Crear frame botons part baixa finestra
         self.fbuttons = tk.Frame(self.frame_main, bg=back_ground)
 
@@ -254,79 +340,10 @@ class secondWindow(startWindow):
 
         self.sw.mainloop()
 
-    def taula(self, diccionari):
-        """Crea la taula dels conceptes per classificar"""
-        # creem un canvas per allotjar la scrollbar
-        # Creem un canvas al frame canvas
-        canvas = tk.Canvas(self.canvas_frame, bg='#1d1d1d')
-        canvas.grid(row=0, column=0, sticky=tk.NSEW)
-        # fiquem el scrolbar al frame canvas
-        vsb = tk.Scrollbar(self.canvas_frame, orient="vertical", command=canvas.yview)
-        vsb.grid(row=0, column=1, sticky=tk.NS)
-        canvas.configure(yscrollcommand=vsb.set)
-        # Crea un frame per la taula de conceptes
-        self.con_frame = tk.Frame(canvas, bg='#1d1d1d')
-        canvas.create_window((0, 0), window=self.con_frame, anchor=tk.NW, width=900)
-        # Afegim els títols de la taula i les files corresponents a conceptes sense classificar
-        cb = '#1d1d1d'
-        font_titol = font.Font(family="Helvetica", size=10, weight="bold")
-        rows = len(self.rows)
-        columns = 5
-        self.labels = [[tk.Label() for j in range(columns)] for i in range(rows)]
-
-        self.labels[0][0] = tk.Label(self.con_frame, text="CONCEPTE", font=font_titol, bg=cb, fg='white')
-        self.labels[0][0].grid(row=0, column=0, ipadx=50, ipady=10)
-        self.labels[0][1] = tk.Label(self.con_frame, text="DATA", font=font_titol, bg=cb, fg='white')
-        self.labels[0][1].grid(row=0, column=1, ipadx=50, ipady=10)
-        self.labels[0][2] = tk.Label(self.con_frame, text="IMPORT", font=font_titol, bg=cb, fg='white')
-        self.labels[0][2].grid(row=0, column=2, ipadx=50, ipady=10)
-        self.labels[0][3] = tk.Label(self.con_frame, text="CLASSIFICACIÓ", font=font_titol, bg=cb, fg='white')
-        self.labels[0][3].grid(row=0, column=3, ipadx=50, ipady=10)
-        for i in range(1, rows):
-            # taula
-            font_lab = font.Font(family="Helvetica", size=9)
-            self.labels[i][0] = tk.Label(self.con_frame, text=str(self.ws_act.cell(row=self.rows[i], column=1).value)[:18],
-                                    font=font_lab, bg=cb, fg='white')
-            self.labels[i][0].grid(row=i, column=0, ipadx=70, ipady=10)
-            self.labels[i][1] = tk.Label(self.con_frame, text=str(self.ws_act.cell(row=self.rows[i], column=2).value),
-                                    font=font_lab, bg=cb, fg='white')
-            self.labels[i][1].grid(row=i, column=1, ipadx=70, ipady=10)
-            self.labels[i][2] = tk.Label(self.con_frame, text=str(self.ws_act.cell(row=self.rows[i], column=3).value),
-                                    font=font_lab, bg=cb, fg='white')
-            self.labels[i][2].grid(row=i, column=2, ipadx=70, ipady=10)
-            llista_clas = list(diccionari.keys())
-            variable = tk.StringVar(self.con_frame)
-            variable.set("")
-            self.opt = tk.OptionMenu(self.con_frame, variable, *llista_clas)
-            self.opt.config(font=font_lab, bg=cb, fg='white', highlightthickness=0, width=1)
-            self.opt.grid(row=i, column=3, sticky=tk.EW, ipadx=70, ipady=5)
-        # Update buttons frames idle tasks to let tkinter calculate buttons sizes
-        self.con_frame.update_idletasks()
-
-        # Recalcul del canvas per que mostri totes les files de conceptes
-        nfiles = 0
-        if len(self.rows) >= 12:
-            nfiles = 12
-        else:
-            nfiles = len(self.rows)
-        columns_width = sum([self.labels[0][j].winfo_width() for j in range(0, 4)])
-        rows_height = sum([self.labels[i][0].winfo_height() for i in range(0, nfiles)])
-        extra_amplada = 0
-        extra_altura = 0
-        if columns_width < self.amplada_finestra:
-            extra_amplada = self.amplada_finestra - columns_width - 15
-            columns_width = columns_width + extra_amplada
-        if rows_height < self.altura_finestra - 100:
-            extra_altura= self.altura_finestra - rows_height - 185
-            rows_height = rows_height + extra_altura
-        self.canvas_frame.config(width=columns_width + vsb.winfo_width(), height=rows_height)
-        # Set the canvas scrolling region
-        canvas.config(scrollregion=canvas.bbox("all"))
-
     def combiexcel(self, llista):
         """Afegeix els excels del banc a un de sol"""
         # Carreguem l'excel de comptes
-        ex_comptes = load_workbook('C:/Users/ferra/OneDrive/Tesla/Economia/EstatComptes.xlsx')
+        self.ex_comptes = load_workbook('C:/Users/ferra/OneDrive/Tesla/Economia/EstatComptes.xlsx')
         for document in llista:
             # Carreguem l'excel del banc
             ex_caixa = load_workbook(document)
@@ -335,10 +352,10 @@ class secondWindow(startWindow):
             # Creació fulla segons el mes
             data_mes = str(sheet_caixa['B4'].value)[0:10].split('-')[1]
             self.nom_fulla = Diccionari.mes.get(data_mes)
-            if self.nom_fulla not in ex_comptes.sheetnames:
-                ws1 = ex_comptes.create_sheet(self.nom_fulla)
+            if self.nom_fulla not in self.ex_comptes.sheetnames:
+                ws1 = self.ex_comptes.create_sheet(self.nom_fulla)
                 ws1.title = self.nom_fulla
-                ws2 = ex_comptes.active = ex_comptes[self.nom_fulla]
+                ws2 = self.ex_comptes.active = self.ex_comptes[self.nom_fulla]
 
                 # calculate total number of rows and
                 # columns in source Excel file
@@ -382,7 +399,7 @@ class secondWindow(startWindow):
                 d1.font = Font(bold=True, size=15)
                 e1.font = Font(bold=True, size=15)
 
-                self.check_concept(ex_comptes)
+                self.check_concept(self.ex_comptes)
 
                 # filtres
                 maxrow = ws2.max_row
@@ -391,14 +408,16 @@ class secondWindow(startWindow):
                 ws2.auto_filter.add_sort_condition(f"B2:B{maxrow}")
 
                 # Taula resum
-                sheet1 = ex_comptes['Gener']
+                sheet1 = self.ex_comptes['Gener']
                 for i in range(2, 20):
                     for j in range(7, 9):
                         ws2.cell(row=i, column=j).value = sheet1.cell(row=i, column=j).value
+
+
                 # Cel·la estalvis
                 ws2['H19'] = f'=D{maxrow}-D2'
 
-            ex_comptes.save(filename='C:/Users/ferra/OneDrive/Tesla/Economia/EstatComptes.xlsx')
+            self.ex_comptes.save(filename='C:/Users/ferra/OneDrive/Tesla/Economia/EstatComptes.xlsx')
 
     def __init__(self, finestra1):
         """Inicialitza la segona finestra"""
