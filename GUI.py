@@ -3,8 +3,9 @@ import glob
 import tkinter as tk
 from tkinter import ttk, filedialog
 import tkinter.font as font
-from openpyxl import load_workbook
+from openpyxl import load_workbook, styles
 from openpyxl.styles import Font
+from openpyxl.formatting.rule import CellIsRule
 from copy import copy
 import Diccionari
 
@@ -144,6 +145,7 @@ class secondWindow(startWindow):
     """Segona finestra"""
 
     def select_item(self, seleccio):
+        """Assigna la classificació a l'element"""
         rows = len(self.rows)
         zip_list = list(zip(self.rows, self.rows_taula))
         for i in range(0, rows):
@@ -304,13 +306,17 @@ class secondWindow(startWindow):
         label_mes = tk.Label(gestio_frame, text=self.nom_fulla,
                              font=font.Font(family="Helvetica", size=25, weight="bold"),
                              padx=20, pady=10, bg=back_ground, fg='white')
+        # Barra inferior
         nouconcepte = tk.Button(self.fbuttons, text="Nova classe i/o concepte", bg=back_ground, fg='white')
+        tancar_finestra = tk.Button(self.fbuttons, text="Tanca", bg=back_ground, fg='white', command=self.sw.destroy)
+        ## ------- Nou concepte
         # Grid widgets
         title_name.grid(row=0, column=0, sticky=tk.NS)
         close_button.grid(sticky=tk.NE)
         label_gestionant.pack(fill=tk.X)
         label_mes.pack(fill=tk.X)
         nouconcepte.pack(side='left')
+        tancar_finestra.pack(side='right')
 
         def move_window(event):
             """Dotar de moviment a la finestra"""
@@ -399,6 +405,7 @@ class secondWindow(startWindow):
                 d1.font = Font(bold=True, size=15)
                 e1.font = Font(bold=True, size=15)
 
+                #Funcio classificacio conceptes
                 self.check_concept(self.ex_comptes)
 
                 # filtres
@@ -409,11 +416,31 @@ class secondWindow(startWindow):
 
                 # Taula resum
                 sheet1 = self.ex_comptes['Gener']
-                for i in range(2, 20):
+                # Copia els valors de la fulla de gener
+                for i in range(2, 20): ## ------- Crear la taula a partir del diccionari
                     for j in range(7, 9):
                         ws2.cell(row=i, column=j).value = sheet1.cell(row=i, column=j).value
-
-
+                # Fica la mateixa amplada de columna
+                for idx, rd in sheet1.column_dimensions.items():
+                    ws2.column_dimensions[idx] = copy(rd)
+                # Mateix format
+                for (row, col), source_cell in sheet1._cells.items():
+                    cell = ws2.cell(column=col, row=row)
+                    cell.font = copy(source_cell.font)
+                    cell.fill = copy(source_cell.fill)
+                    cell.border = copy(source_cell.border)
+                    cell.number_format = copy(source_cell.number_format)
+                    cell.alignment = copy(source_cell.alignment)
+                # Format condicional
+                red_font = styles.Font(size=11, color='9c0006')
+                redFill = styles.PatternFill(bgColor='ffc7ce', fill_type='solid')
+                greenFill = styles.PatternFill(bgColor='c6efce', fill_type='solid')
+                green_font = styles.Font(size=11, color='006100')
+                ws2.conditional_formatting.add('H4:H18', CellIsRule(operator='lessThan', formula=['0'], stopIfTrue=True,
+                                                                    fill=redFill, font=red_font))
+                ws2.conditional_formatting.add('H4:H19', CellIsRule(operator='greaterThan', formula=['0'], stopIfTrue=True,
+                                                                    fill=greenFill, font=green_font))
+                ws2.merge_cells('G2:H2')
                 # Cel·la estalvis
                 ws2['H19'] = f'=D{maxrow}-D2'
 
