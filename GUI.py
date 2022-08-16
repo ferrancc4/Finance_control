@@ -416,10 +416,16 @@ class secondWindow(startWindow):
 
                 # Taula resum
                 sheet1 = self.ex_comptes['Gener']
-                # Copia els valors de la fulla de gener
-                for i in range(2, 20): ## ------- Crear la taula a partir del diccionari
-                    for j in range(7, 9):
-                        ws2.cell(row=i, column=j).value = sheet1.cell(row=i, column=j).value
+                # Crear la taula a partir del diccionari
+                ws2['G2'] = "TAULA RESUM"
+                ws2['G3'] = "Classificació"
+                ws2['H3'] = "€"
+                key_list = list(Diccionari.classificació.keys())
+                num_files = len(key_list)
+                ws2[f'G{num_files + 4}'] = "Estalvis"
+                for i in range(4, num_files + 4):
+                    ws2.cell(row=i, column=7).value = key_list[i - 4]
+                    ws2.cell[f'H{i}'] = f'=SUMAR.SI(E2:E{maxrow};G{i};C2:C{maxrow})'
                 # Fica la mateixa amplada de columna
                 for idx, rd in sheet1.column_dimensions.items():
                     ws2.column_dimensions[idx] = copy(rd)
@@ -442,7 +448,7 @@ class secondWindow(startWindow):
                                                                     fill=greenFill, font=green_font))
                 ws2.merge_cells('G2:H2')
                 # Cel·la estalvis
-                ws2['H19'] = f'=D{maxrow}-D2'
+                ws2[f'H{num_files + 4}'] = f'=D{maxrow}-D2'
 
             self.ex_comptes.save(filename='C:/Users/ferra/OneDrive/Tesla/Economia/EstatComptes.xlsx')
 
