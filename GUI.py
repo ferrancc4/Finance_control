@@ -8,6 +8,7 @@ from openpyxl.styles import Font
 from openpyxl.formatting.rule import CellIsRule
 from copy import copy
 import Diccionari
+import winsound
 
 
 class startWindow:
@@ -143,6 +144,10 @@ class startWindow:
 
 class secondWindow(startWindow):
     """Segona finestra"""
+    def make_noise(self):
+        duration = 100  # milliseconds
+        freq = 440  # Hz
+        winsound.Beep(freq, duration)
 
     def select_item(self, seleccio):
         """Assigna la classificació a l'element"""
@@ -279,7 +284,7 @@ class secondWindow(startWindow):
         gestio_frame = tk.Frame(self.frame_main, bg=back_ground)
         # Creem un frame per al canvas que allotjarà la taula
         self.canvas_frame = tk.Frame(self.frame_main, bg=back_ground)
-        # Crear frame botons part baixa finestra
+        # Crear frame botons barra inferior
         self.fbuttons = tk.Frame(self.frame_main, bg=back_ground)
 
         # Grid Frames
@@ -341,7 +346,6 @@ class secondWindow(startWindow):
                 self.rows.append(j)
 
         # creació taula
-
         self.taula(Diccionari.classificació)
 
         self.sw.mainloop()
@@ -404,10 +408,8 @@ class secondWindow(startWindow):
                 c1.font = Font(bold=True, size=15)
                 d1.font = Font(bold=True, size=15)
                 e1.font = Font(bold=True, size=15)
-
                 #Funcio classificacio conceptes
                 self.check_concept(self.ex_comptes)
-
                 # filtres
                 maxrow = ws2.max_row
                 ws2.auto_filter.ref = f"A1:E{maxrow}"
@@ -425,7 +427,8 @@ class secondWindow(startWindow):
                 ws2[f'G{num_files + 4}'] = "Estalvis"
                 for i in range(4, num_files + 4):
                     ws2.cell(row=i, column=7).value = key_list[i - 4]
-                    ws2.cell[f'H{i}'] = f'=SUMAR.SI(E2:E{maxrow};G{i};C2:C{maxrow})'
+                    # El nom de l'operació excel ha de ser en ingles
+                    ws2[f'H{i}'] = f'=SUMIF(E2:E{maxrow},G{i},C2:C{maxrow})'
                 # Fica la mateixa amplada de columna
                 for idx, rd in sheet1.column_dimensions.items():
                     ws2.column_dimensions[idx] = copy(rd)
@@ -451,6 +454,7 @@ class secondWindow(startWindow):
                 ws2[f'H{num_files + 4}'] = f'=D{maxrow}-D2'
 
             self.ex_comptes.save(filename='C:/Users/ferra/OneDrive/Tesla/Economia/EstatComptes.xlsx')
+            self.make_noise()
 
     def __init__(self, finestra1):
         """Inicialitza la segona finestra"""
