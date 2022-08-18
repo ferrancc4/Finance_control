@@ -9,6 +9,7 @@ from openpyxl.formatting.rule import CellIsRule
 from copy import copy
 import Diccionari
 import winsound
+import json
 
 
 class startWindow:
@@ -149,13 +150,145 @@ class secondWindow(startWindow):
         freq = 440  # Hz
         winsound.Beep(freq, duration)
 
-    def select_item(self, seleccio):
+    def safexit(self):
+        with open('classificacio.json') as json_file:
+            json_decoded = json.load(json_file)
+
+
+        if self.entry_key.get().capitalize() in json_decoded["classificacio"]:
+            json_decoded["classificacio"][self.entry_key.get().capitalize()].append(self.entry_valor.get().lower())
+        else:
+            json_decoded["classificacio"][self.entry_key.get().capitalize()] = [self.entry_valor.get().lower()]
+
+        with open('classificacio.json', 'w', encoding='iso-8859-1') as json_file:
+            json.dump(json_decoded, json_file, sort_keys=True, indent=4, ensure_ascii=False)
+
+        rows = len(self.rows)
+        for i in range(0, rows):
+            self.opt[i][3].set_menu
+        # # Actualitzar llista de l'OptionMenu
+        # rows = len(self.rows)
+        # for i in range(0, rows):
+        #     # Resetegem la variable i voremm les velles
+        #     self.vconcept[i][3].set('')
+        #     self.opt[i][3]['menu'].delete(0, 'end')
+        #     # Insertem les noves opcionsInsert list of new options (tk._setit hooks them up to var)
+        #     new_choices = []
+        #     for x in json_decoded["classificacio"]:
+        #         self.llista_clas.append(x)
+        #     for choice in new_choices:
+        #         self.opt[i][3]['menu'].add_command(label=choice, command=tk.setit(self.vconcept[i][3], choice))
+
+        self.dicw.destroy()
+
+    def safe(self):
+        with open('classificacio.json') as json_file:
+            json_decoded = json.load(json_file)
+
+        if self.entry_key.get().capitalize() in json_decoded["classificacio"]:
+            json_decoded["classificacio"][self.entry_key.get().capitalize()].append(self.entry_valor.get().lower())
+        else:
+            json_decoded["classificacio"][self.entry_key.get().capitalize()] = [self.entry_valor.get().lower()]
+
+        with open('classificacio.json', 'w', encoding='iso-8859-1') as json_file:
+            json.dump(json_decoded, json_file, sort_keys=True, indent=4, ensure_ascii=False)
+
+        self.entry_key.delete(0, tk.END)
+        self.entry_valor.delete(0, tk.END)
+
+    def newcategory(self):
+        """Crea un nou concepte o categoria al diccionari"""
+        # Creem la segona pantalla
+        self.dicw = tk.Tk()
+        self.dicw.overrideredirect(True)
+
+        # Configurar grid
+        self.dicw.rowconfigure(0, weight=1)
+        self.dicw.columnconfigure(0, weight=1)
+
+        self.amp_dicw = 495
+        self.alt_dicw = 245
+        amplada_monitor = self.dicw.winfo_screenwidth()
+        altura_monitor = self.dicw.winfo_screenheight()
+        x = round(amplada_monitor / 2 - self.amp_dicw / 2)
+        y = round((altura_monitor - 50) / 2 - self.alt_dicw / 2)
+
+        self.dicw.geometry(f'{self.amp_dicw}x{self.alt_dicw}+{x}+{y}')
+
+        # Frames
+        # Creem un frame general
+        self.frame_gen = tk.Frame(self.dicw, bg="gray", width=self.amp_dicw, height=self.alt_dicw)
+        self.frame_gen.grid(sticky=tk.NSEW)
+        # Crea un frame per a la barra nova de títol
+        back_ground = '#1d1d1d'
+        title_barframef = tk.Frame(self.frame_gen, width=self.amp_dicw, height=20, bg=back_ground,
+                                  relief='raised', bd=1,
+                                  pady=3, highlightcolor=back_ground, highlightthickness=0)
+        # crear frame per al botó tancar
+        close_framef = tk.Frame(self.frame_gen, bg=back_ground, width=10, height=10, relief='raised', bd=1,
+                               highlightcolor=back_ground, highlightthickness=0)
+        # Crea un frame diccionari
+        dic_frame = tk.Frame(self.frame_gen, bg=back_ground)
+        # Grid Frames
+        title_barframef.grid(row=0, sticky=tk.EW)
+        close_framef.grid(row=0, sticky=tk.NE)
+        dic_frame.grid(row=1, sticky=tk.NSEW)
+        # Widggets
+        # Títol finestra
+        title_namef = tk.Label(title_barframef, text="Financial Control", bg=back_ground, fg='white')
+        # Crea un botó per tancar a la barra de títol
+        close_buttonf = tk.Button(close_framef, text='x', command=self.dicw.destroy, bg=back_ground,
+                                 activebackground="red", bd=0, font="bold", fg='white',
+                                 activeforeground="white",
+                                 highlightthickness=0)
+        # Labels diccionari
+        # Etiqueta key
+        e_keydic = tk.Label(dic_frame, text="Categoria:", bg=back_ground, fg='white', padx=15, pady=30)
+        # Entrada key
+        self.key_dic = tk.StringVar()
+        self.entry_key = ttk.Entry(dic_frame, textvariable=self.key_dic, justify=tk.LEFT, width=50,
+                                 background=back_ground)
+        # Etiqueta valor
+        e_valor = tk.Label(dic_frame, text="Valor:", bg=back_ground, fg='white', padx=15, pady=30)
+        # Entrada valor
+        self.valor_dic = tk.StringVar()
+        self.entry_valor = ttk.Entry(dic_frame, textvariable=self.valor_dic, justify=tk.LEFT, width=50,
+                                 background=back_ground)
+        # Botó tancar i guardar diccionari
+        button_save = tk.Button(dic_frame, text="Guardar", bg=back_ground, fg='white', command=self.safe)
+        button_saveexit = tk.Button(dic_frame, text="Guardar i tancar", bg=back_ground, fg='white', command=self.safexit)
+        # Grid widgets
+        title_namef.grid(row=0, column=0, sticky=tk.NSEW)
+        close_buttonf.grid(sticky=tk.NE)
+        e_keydic.grid(row=0, column=0, sticky=tk.W)
+        e_valor.grid(row=1, column=0, sticky=tk.W)
+        self.entry_key.grid(row=0, column=1, sticky=tk.W)
+        self.entry_valor.grid(row=1, column=1, sticky=tk.W)
+        button_save.grid(row=2, column=3, sticky=tk.EW, pady=2, padx=5)
+        button_saveexit.grid(row=3, column=3, sticky=tk.EW, pady=2, padx=5)
+
+        def move_window(event):
+            """Dotar de moviment a la finestra"""
+            self.dicw.geometry('+{0}+{1}'.format(event.x_root, event.y_root))
+
+        def change_on_hovering(event):
+            """El botó canvia de color al passar per sobre"""
+            close_buttonf.configure(bg='red')
+
+        def return_to_normal_state(event):
+            """El botó torna al seu estat inicial"""
+            close_buttonf.configure(bg=back_ground)
+
+        title_barframef.bind('<B1-Motion>', move_window)
+        close_buttonf.bind('<Enter>', change_on_hovering)
+        close_buttonf.bind('<Leave>', return_to_normal_state)
+
+    def select_item(self, selection):
         """Assigna la classificació a l'element"""
         rows = len(self.rows)
         zip_list = list(zip(self.rows, self.rows_taula))
         for i in range(0, rows):
-            if seleccio == self.vconcept[i][3].get():
-                self.ws_act.cell(row=zip_list[i][0], column=5).value = seleccio
+            self.ws_act.cell(row=zip_list[i][0], column=5).value = selection
         self.ex_comptes.save(filename='C:/Users/ferra/OneDrive/Tesla/Economia/EstatComptes.xlsx')
     def taula(self, diccionari):
         """Crea la taula dels conceptes per classificar"""
@@ -181,9 +314,15 @@ class secondWindow(startWindow):
         columns = 4
         # Per poder crear variables de la taula
         self.labels = [[tk.Label() for j in range(columns)] for i in range(rows)]
-        llista_clas = list(diccionari.keys())
-        self.vconcept = [[tk.StringVar(self.con_frame) for j in range(columns)] for i in range(rows)]
-        self.opt = [[tk.OptionMenu(self.con_frame, self.vconcept[i][3], *llista_clas) for j in range(columns)] for i in
+        # Creem la llista del diccionari json
+        self.llista_clas = []
+        with open('classificacio.json', encoding='utf-8') as json_file:
+            data = json.load(json_file)
+            dic = data["classificacio"]
+            for x in dic:
+                self.llista_clas.append(x)
+        self.var = [[tk.StringVar(self.con_frame) for j in range(columns)] for i in range(rows)]
+        self.opt = [[ttk.OptionMenu(self.con_frame, self.var[i][3], *self.llista_clas) for j in range(columns)] for i in
                     range(rows)]
 
         self.labels[0][0] = tk.Label(self.con_frame, text="CONCEPTE", font=font_titol, bg=cb, fg='white')
@@ -195,7 +334,6 @@ class secondWindow(startWindow):
         self.labels[0][3] = tk.Label(self.con_frame, text="CLASSIFICACIÓ", font=font_titol, bg=cb, fg='white')
         self.labels[0][3].grid(row=0, column=3, ipadx=50, ipady=10)
 
-        self.vclist = []
         for i in range(0, rows):
             # taula
             font_lab = font.Font(family="Helvetica", size=9)
@@ -208,10 +346,12 @@ class secondWindow(startWindow):
             self.labels[i][2] = tk.Label(self.con_frame, text=str(self.ws_act.cell(row=self.rows[i], column=3).value),
                                          font=font_lab, bg=cb, fg='white')
             self.labels[i][2].grid(row=i, column=2, ipadx=70, ipady=10)
-            self.vconcept[i][3] = tk.StringVar(self.con_frame)
-            self.vconcept[i][3].set(f'SELECT - {i}')
-            self.opt[i][3] = tk.OptionMenu(self.con_frame, self.vconcept[i][3], *llista_clas, command=self.select_item)
-            self.opt[i][3].config(font=font_lab, bg=cb, fg="white", highlightthickness=0, width=1)
+            self.var[i][3] = tk.StringVar()
+            style = ttk.Style()
+            style.configure('my.TMenubutton', font=('Helvetica', 9),  background=cb, foreground="white",
+                            highlightthickness=0)
+            self.opt[i][3] = ttk.OptionMenu(self.con_frame, self.var[i][3], f'SELECTION - {i}', *self.llista_clas,
+                                            command=self.select_item, style='my.TMenubutton')
             self.opt[i][3].grid(row=i, column=3, sticky=tk.EW, ipadx=70, ipady=5)
 
         # Update buttons frames idle tasks to let tkinter calculate buttons sizes
@@ -246,11 +386,13 @@ class secondWindow(startWindow):
         for j in range(2, self.ws_act.max_row + 1):
             concept = str(self.ws_act.cell(row=j, column=1).value).lower()
             # iterem pel diccionari de conceptes
-            for elem in Diccionari.classificació.values():
-                for res in elem:
-                    if res in concept:
-                        self.ws_act.cell(row=j, column=5).value = list(Diccionari.classificació.keys())[
-                            list(Diccionari.classificació.values()).index(elem)]
+            with open('classificacio.json', encoding='utf-8') as json_file:
+                data = json.load(json_file)
+                dic = data["classificacio"]
+                for elem in dic:
+                    for y in data["classificacio"][elem]:
+                        if y in concept:
+                            self.ws_act.cell(row=j, column=5).value = elem
         # Creem la segona pantalla
         self.sw = tk.Tk()
         self.sw.overrideredirect(True)
@@ -259,7 +401,7 @@ class secondWindow(startWindow):
         self.sw.rowconfigure(0, weight=1)
         self.sw.columnconfigure(0, weight=1)
 
-        self.amplada_finestra = 900
+        self.amplada_finestra = 920
         self.altura_finestra = 700
         amplada_monitor = self.sw.winfo_screenwidth()
         altura_monitor = self.sw.winfo_screenheight()
@@ -270,7 +412,7 @@ class secondWindow(startWindow):
 
         # Frames
         # Creem un frame general
-        self.frame_main = tk.Frame(self.sw, bg="gray", width=self.amplada_finestra, height=self.altura_finestra)
+        self.frame_main = tk.Frame(self.sw, bg="gray", width=self.amplada_finestra, height=self.altura_finestra-50)
         self.frame_main.grid(sticky=tk.NSEW)
         # Crea un frame per a la barra nova de títol
         back_ground = '#1d1d1d'
@@ -285,7 +427,7 @@ class secondWindow(startWindow):
         # Creem un frame per al canvas que allotjarà la taula
         self.canvas_frame = tk.Frame(self.frame_main, bg=back_ground)
         # Crear frame botons barra inferior
-        self.fbuttons = tk.Frame(self.frame_main, bg=back_ground)
+        self.fbuttons = tk.Frame(self.frame_main, bg=back_ground,width=self.amplada_finestra, height=20, pady=3)
 
         # Grid Frames
         title_barframe.grid(row=0, sticky=tk.EW)
@@ -312,16 +454,15 @@ class secondWindow(startWindow):
                              font=font.Font(family="Helvetica", size=25, weight="bold"),
                              padx=20, pady=10, bg=back_ground, fg='white')
         # Barra inferior
-        nouconcepte = tk.Button(self.fbuttons, text="Nova classe i/o concepte", bg=back_ground, fg='white')
+        nouconcepte = tk.Button(self.fbuttons, text="Nova classe i/o concepte", bg=back_ground, fg='white', command=self.newcategory)
         tancar_finestra = tk.Button(self.fbuttons, text="Tanca", bg=back_ground, fg='white', command=self.sw.destroy)
-        ## ------- Nou concepte
         # Grid widgets
         title_name.grid(row=0, column=0, sticky=tk.NS)
         close_button.grid(sticky=tk.NE)
         label_gestionant.pack(fill=tk.X)
         label_mes.pack(fill=tk.X)
-        nouconcepte.pack(side='left')
-        tancar_finestra.pack(side='right')
+        nouconcepte.pack(side='left', pady=5, padx=5)
+        tancar_finestra.pack(side='right', pady=5, padx=5)
 
         def move_window(event):
             """Dotar de moviment a la finestra"""
@@ -346,7 +487,10 @@ class secondWindow(startWindow):
                 self.rows.append(j)
 
         # creació taula
-        self.taula(Diccionari.classificació)
+        with open('classificacio.json', encoding='utf-8') as json_file:
+            data = json.load(json_file)
+            dic = data["classificacio"]
+        self.taula(dic)
 
         self.sw.mainloop()
 
@@ -422,7 +566,7 @@ class secondWindow(startWindow):
                 ws2['G2'] = "TAULA RESUM"
                 ws2['G3'] = "Classificació"
                 ws2['H3'] = "€"
-                key_list = list(Diccionari.classificació.keys())
+                key_list = self.llista_clas
                 num_files = len(key_list)
                 ws2[f'G{num_files + 4}'] = "Estalvis"
                 for i in range(4, num_files + 4):
@@ -454,7 +598,6 @@ class secondWindow(startWindow):
                 ws2[f'H{num_files + 4}'] = f'=D{maxrow}-D2'
 
             self.ex_comptes.save(filename='C:/Users/ferra/OneDrive/Tesla/Economia/EstatComptes.xlsx')
-            self.make_noise()
 
     def __init__(self, finestra1):
         """Inicialitza la segona finestra"""

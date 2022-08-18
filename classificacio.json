@@ -1,0 +1,102 @@
+{
+    "classificacio": {
+        "Apostes": [
+            "miloto",
+            "loterias"
+        ],
+        "Bizum": [
+            "movil",
+            "bizum"
+        ],
+        "Compres": [
+            "ikea",
+            "media mark",
+            "fnac",
+            "alipay",
+            "aliexpres",
+            "amzn mktp",
+            "amazon.es",
+            "google si",
+            "google au",
+            "ali baba",
+            "cursoonli",
+            "peihui",
+            "calzedonia",
+            "digitalri",
+            "virtualco",
+            "asia"
+        ],
+        "Donacions": [
+            "impulsat"
+        ],
+        "Hisenda": [
+            "agencia tribu",
+            "hisenda"
+        ],
+        "Ingressos": [
+            "nomina",
+            "pies desti"
+        ],
+        "Menja": [
+            "fruites",
+            "verdures",
+            "consum",
+            "bon area",
+            "hipermercat",
+            "mercadona",
+            "quatre camins"
+        ],
+        "Parking": [
+            "cons."
+        ],
+        "Peugeot": [
+            "escurriola",
+            "norauto",
+            "seg.catalana"
+        ],
+        "Pis_BCN": [
+            "gastos",
+            "ferran"
+        ],
+        "Restauració": [
+            "bar",
+            "granja",
+            "cafe",
+            "glovo",
+            "restaurant",
+            "itzurun",
+            "el pi",
+            "fornet",
+            "bocadillos",
+            "brasa",
+            "la botiga",
+            "wei heng tai kang",
+            "ue remolins",
+            "green way",
+            "gelateria"
+        ],
+        "Sanitat": [
+            "farmacia",
+            "clinident"
+        ],
+        "Subscripcions": [
+            "google go",
+            "together",
+            "price",
+            "mastermind",
+            "amazon prime",
+            "microsoft",
+            "avinguda madr."
+        ],
+        "Tesla": [
+            "tesla"
+        ],
+        "Transport": [
+            "tmb",
+            "supeco",
+            "tamoil",
+            "via t",
+            "taxi"
+        ]
+    }
+}
