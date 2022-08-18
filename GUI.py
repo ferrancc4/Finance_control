@@ -7,7 +7,6 @@ from openpyxl import load_workbook, styles
 from openpyxl.styles import Font
 from openpyxl.formatting.rule import CellIsRule
 from copy import copy
-import Diccionari
 import winsound
 import json
 
@@ -160,24 +159,19 @@ class secondWindow(startWindow):
         else:
             json_decoded["classificacio"][self.entry_key.get().capitalize()] = [self.entry_valor.get().lower()]
 
-        with open('classificacio.json', 'w', encoding='iso-8859-1') as json_file:
+        with open('classificacio.json', 'w') as json_file:
             json.dump(json_decoded, json_file, sort_keys=True, indent=4, ensure_ascii=False)
 
+        updated_list = []
+        with open('classificacio.json') as json_file:
+            data = json.load(json_file)
+            dic = data["classificacio"]
+            for x in dic:
+                updated_list.append(x)
         rows = len(self.rows)
         for i in range(0, rows):
-            self.opt[i][3].set_menu
-        # # Actualitzar llista de l'OptionMenu
-        # rows = len(self.rows)
-        # for i in range(0, rows):
-        #     # Resetegem la variable i voremm les velles
-        #     self.vconcept[i][3].set('')
-        #     self.opt[i][3]['menu'].delete(0, 'end')
-        #     # Insertem les noves opcionsInsert list of new options (tk._setit hooks them up to var)
-        #     new_choices = []
-        #     for x in json_decoded["classificacio"]:
-        #         self.llista_clas.append(x)
-        #     for choice in new_choices:
-        #         self.opt[i][3]['menu'].add_command(label=choice, command=tk.setit(self.vconcept[i][3], choice))
+            self.opt[i][3].set_menu(f'SELECTION - {i}', *updated_list)
+
 
         self.dicw.destroy()
 
@@ -190,7 +184,7 @@ class secondWindow(startWindow):
         else:
             json_decoded["classificacio"][self.entry_key.get().capitalize()] = [self.entry_valor.get().lower()]
 
-        with open('classificacio.json', 'w', encoding='iso-8859-1') as json_file:
+        with open('classificacio.json', 'w') as json_file:
             json.dump(json_decoded, json_file, sort_keys=True, indent=4, ensure_ascii=False)
 
         self.entry_key.delete(0, tk.END)
@@ -316,7 +310,7 @@ class secondWindow(startWindow):
         self.labels = [[tk.Label() for j in range(columns)] for i in range(rows)]
         # Creem la llista del diccionari json
         self.llista_clas = []
-        with open('classificacio.json', encoding='utf-8') as json_file:
+        with open('classificacio.json') as json_file:
             data = json.load(json_file)
             dic = data["classificacio"]
             for x in dic:
@@ -386,7 +380,7 @@ class secondWindow(startWindow):
         for j in range(2, self.ws_act.max_row + 1):
             concept = str(self.ws_act.cell(row=j, column=1).value).lower()
             # iterem pel diccionari de conceptes
-            with open('classificacio.json', encoding='utf-8') as json_file:
+            with open('classificacio.json') as json_file:
                 data = json.load(json_file)
                 dic = data["classificacio"]
                 for elem in dic:
@@ -487,7 +481,7 @@ class secondWindow(startWindow):
                 self.rows.append(j)
 
         # creació taula
-        with open('classificacio.json', encoding='utf-8') as json_file:
+        with open('classificacio.json') as json_file:
             data = json.load(json_file)
             dic = data["classificacio"]
         self.taula(dic)
@@ -505,7 +499,10 @@ class secondWindow(startWindow):
 
             # Creació fulla segons el mes
             data_mes = str(sheet_caixa['B4'].value)[0:10].split('-')[1]
-            self.nom_fulla = Diccionari.mes.get(data_mes)
+            with open('classificacio.json') as mes:
+                data = json.load(mes)
+                dic = data["mes"]
+            self.nom_fulla = dic[data_mes]
             if self.nom_fulla not in self.ex_comptes.sheetnames:
                 ws1 = self.ex_comptes.create_sheet(self.nom_fulla)
                 ws1.title = self.nom_fulla
@@ -589,9 +586,9 @@ class secondWindow(startWindow):
                 redFill = styles.PatternFill(bgColor='ffc7ce', fill_type='solid')
                 greenFill = styles.PatternFill(bgColor='c6efce', fill_type='solid')
                 green_font = styles.Font(size=11, color='006100')
-                ws2.conditional_formatting.add('H4:H18', CellIsRule(operator='lessThan', formula=['0'], stopIfTrue=True,
+                ws2.conditional_formatting.add(f'H4:H{num_files + 4}', CellIsRule(operator='lessThan', formula=['0'], stopIfTrue=True,
                                                                     fill=redFill, font=red_font))
-                ws2.conditional_formatting.add('H4:H19', CellIsRule(operator='greaterThan', formula=['0'], stopIfTrue=True,
+                ws2.conditional_formatting.add(f'H4:H{num_files + 4}', CellIsRule(operator='greaterThan', formula=['0'], stopIfTrue=True,
                                                                     fill=greenFill, font=green_font))
                 ws2.merge_cells('G2:H2')
                 # Cel·la estalvis

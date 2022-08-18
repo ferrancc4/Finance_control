@@ -58,7 +58,7 @@
             "gastos",
             "ferran"
         ],
-        "RestauraciÃ³": [
+        "Restauració": [
             "bar",
             "granja",
             "cafe",
@@ -73,7 +73,8 @@
             "wei heng tai kang",
             "ue remolins",
             "green way",
-            "gelateria"
+            "gelateria",
+            "siurana"
         ],
         "Sanitat": [
             "farmacia",
@@ -98,5 +99,19 @@
             "via t",
             "taxi"
         ]
+    },
+    "mes": {
+        "01": "Gener",
+        "02": "Febrer",
+        "03": "Març",
+        "04": "Abril",
+        "05": "Maig",
+        "06": "Juny",
+        "07": "Juliol",
+        "08": "Agost",
+        "09": "Setembre",
+        "10": "Octubre",
+        "11": "Novembre",
+        "12": "Desembre"
     }
 }
