@@ -3,17 +3,19 @@ import glob
 import tkinter as tk
 from tkinter import ttk, filedialog
 import tkinter.font as font
-from openpyxl import load_workbook, styles
+from openpyxl import Workbook, load_workbook, styles
 from openpyxl.styles import Font
+from openpyxl.styles.alignment import Alignment
+from openpyxl.styles.borders import Border, Side
 from openpyxl.formatting.rule import CellIsRule
-from copy import copy
-import winsound
 import json
+from datetime import date
 
 
 class startWindow:
     """Primera finestra"""
     carpeta = ""
+    excelcomptes = ""
 
     def __init__(self):
         """Inicialitza la primera pantalla"""
@@ -27,7 +29,7 @@ class startWindow:
         # que se situarà en la coordenada x=500,y=50
         # Centrem la finestra a la pantalla
         amplada_finestra = 600
-        altura_finestra = 160
+        altura_finestra = 200
         amplada_monitor = self.arrel.winfo_screenwidth()
         altura_monitor = self.arrel.winfo_screenheight()
         x = round(amplada_monitor / 2 - amplada_finestra / 2)
@@ -62,6 +64,12 @@ class startWindow:
         close_button = tk.Button(close_frame, text='x', command=self.arrel.destroy, bg=back_ground,
                                  activebackground="red", bd=0, font="bold", fg='white', activeforeground="white",
                                  highlightthickness=0)
+        # Entrada any
+        self.any = tk.StringVar()
+        self.any.set(f'{date.today().year}')
+        self.entry_any = ttk.Entry(folder_frame, textvariable=self.any, justify=tk.LEFT, width=6,
+                                 background=back_ground)
+
         # Etiqueta carpeta
         folder_label = tk.Label(folder_frame, text="Sel·lecciona la carpeta d'excels",
                                 bg=back_ground, fg='white', padx=15, pady=30)
@@ -82,10 +90,11 @@ class startWindow:
         # Grid widgets
         title_name.grid(row=0, column=0, columnspan=7, sticky=tk.NS)
         close_button.grid(sticky=tk.NE)
-        folder_label.grid(row=0, column=0, sticky=tk.W)
-        entry_folder.grid(row=0, column=1, sticky=tk.W)
-        search_button.grid(row=0, column=2, sticky=tk.E, padx=5)
-        continue_button.grid(row=1, column=2, sticky=tk.SW, padx=5, pady=20)
+        self.entry_any.grid(row=0, column=0, sticky=tk.W, padx=15,pady=10)
+        folder_label.grid(row=1, column=0, sticky=tk.W)
+        entry_folder.grid(row=1, column=1, sticky=tk.W)
+        search_button.grid(row=1, column=2, sticky=tk.E, padx=5)
+        continue_button.grid(row=2, column=2, sticky=tk.SW, padx=5, pady=20)
 
         # Esdeveniment amb bind per poder moure la finestra
 
@@ -130,12 +139,22 @@ class startWindow:
 
     def get_folder_path(self):
         """Obte la ruta de la carpeta i la llista d'excels"""
-        self.folder_path = tk.filedialog.askdirectory(initialdir=r"C:\Users\ferra\OneDrive\Tesla\Economia",
+        self.folder_path = tk.filedialog.askdirectory(initialdir=r"C:\Users\ferra\OneDrive\Comptes\Excels_caixa",
                                                       title="Sel·lecciona una carpeta")
         self.carpeta.set(self.folder_path)
 
     def next_window(self):
-        """Tanca la primera finestra i obre la següent"""
+        """Sel·lecciona l'excel del any o el crea, tanca la primera finestra i obre la següent"""
+        any = self.entry_any.get()
+        llista_comptes = glob.glob('C:/Users/ferra/OneDrive/Comptes/*.xlsx')
+        for xls in llista_comptes:
+            if any in xls:
+                startWindow.excelcomptes = xls
+            else:
+                nou_excel = Workbook()
+                nou_excel.save(filename=f'C:/Users/ferra/OneDrive/Comptes/Comptes_{any}.xlsx')
+                startWindow.excelcomptes = f'C:/Users/ferra/OneDrive/Comptes/Comptes_{any}.xlsx'
+
         ## -----Implementar error de carpeta----------
         startWindow.carpeta = self.carpeta.get()
         self.arrel.destroy()
@@ -144,11 +163,6 @@ class startWindow:
 
 class secondWindow(startWindow):
     """Segona finestra"""
-    def make_noise(self):
-        duration = 100  # milliseconds
-        freq = 440  # Hz
-        winsound.Beep(freq, duration)
-
     def safexit(self):
         with open('classificacio.json') as json_file:
             json_decoded = json.load(json_file)
@@ -282,9 +296,10 @@ class secondWindow(startWindow):
         rows = len(self.rows)
         zip_list = list(zip(self.rows, self.rows_taula))
         for i in range(0, rows):
-            self.ws_act.cell(row=zip_list[i][0], column=5).value = selection
-        self.ex_comptes.save(filename='C:/Users/ferra/OneDrive/Tesla/Economia/EstatComptes.xlsx')
-    def taula(self, diccionari):
+            if selection == self.var[i][3].get():
+                self.ws_act.cell(row=zip_list[i][0], column=5).value = selection
+        self.ex_comptes.save(filename=startWindow.excelcomptes)
+    def taula(self):
         """Crea la taula dels conceptes per classificar"""
         # creem un canvas per allotjar la scrollbar
         # Creem un canvas al frame canvas
@@ -308,13 +323,6 @@ class secondWindow(startWindow):
         columns = 4
         # Per poder crear variables de la taula
         self.labels = [[tk.Label() for j in range(columns)] for i in range(rows)]
-        # Creem la llista del diccionari json
-        self.llista_clas = []
-        with open('classificacio.json') as json_file:
-            data = json.load(json_file)
-            dic = data["classificacio"]
-            for x in dic:
-                self.llista_clas.append(x)
         self.var = [[tk.StringVar(self.con_frame) for j in range(columns)] for i in range(rows)]
         self.opt = [[ttk.OptionMenu(self.con_frame, self.var[i][3], *self.llista_clas) for j in range(columns)] for i in
                     range(rows)]
@@ -375,7 +383,6 @@ class secondWindow(startWindow):
         """Classifica els conceptes segons el diccionari i si no estan classificats crea una interfície per
         classificarlos """
         self.ws_act = excel.active
-
         # iterem per cada una de les files de l'excel i assignem un concepte
         for j in range(2, self.ws_act.max_row + 1):
             concept = str(self.ws_act.cell(row=j, column=1).value).lower()
@@ -387,111 +394,118 @@ class secondWindow(startWindow):
                     for y in data["classificacio"][elem]:
                         if y in concept:
                             self.ws_act.cell(row=j, column=5).value = elem
-        # Creem la segona pantalla
-        self.sw = tk.Tk()
-        self.sw.overrideredirect(True)
-
-        # Configurar grid
-        self.sw.rowconfigure(0, weight=1)
-        self.sw.columnconfigure(0, weight=1)
-
-        self.amplada_finestra = 920
-        self.altura_finestra = 700
-        amplada_monitor = self.sw.winfo_screenwidth()
-        altura_monitor = self.sw.winfo_screenheight()
-        x = round(amplada_monitor / 2 - self.amplada_finestra / 2)
-        y = round((altura_monitor - 50) / 2 - self.altura_finestra / 2)
-
-        self.sw.geometry(f'{self.amplada_finestra}x{self.altura_finestra}+{x}+{y}')
-
-        # Frames
-        # Creem un frame general
-        self.frame_main = tk.Frame(self.sw, bg="gray", width=self.amplada_finestra, height=self.altura_finestra-50)
-        self.frame_main.grid(sticky=tk.NSEW)
-        # Crea un frame per a la barra nova de títol
-        back_ground = '#1d1d1d'
-        title_barframe = tk.Frame(self.frame_main, width=self.amplada_finestra, height=20, bg=back_ground,
-                                  relief='raised', bd=1,
-                                  pady=3, highlightcolor=back_ground, highlightthickness=0)
-        # crear frame per al botó tancar
-        close_frame = tk.Frame(self.frame_main, bg=back_ground, width=10, height=10, relief='raised', bd=1,
-                               highlightcolor=back_ground, highlightthickness=0)
-        # Crea un frame gestió excel
-        gestio_frame = tk.Frame(self.frame_main, bg=back_ground)
-        # Creem un frame per al canvas que allotjarà la taula
-        self.canvas_frame = tk.Frame(self.frame_main, bg=back_ground)
-        # Crear frame botons barra inferior
-        self.fbuttons = tk.Frame(self.frame_main, bg=back_ground,width=self.amplada_finestra, height=20, pady=3)
-
-        # Grid Frames
-        title_barframe.grid(row=0, sticky=tk.EW)
-        close_frame.grid(row=0, sticky=tk.NE)
-        gestio_frame.grid(row=1, sticky=tk.EW)
-        self.canvas_frame.grid(row=2, column=0, sticky=tk.EW)
-        self.canvas_frame.rowconfigure(0, weight=1)
-        self.canvas_frame.columnconfigure(0, weight=1)
-        self.canvas_frame.grid_propagate(False)
-        self.fbuttons.grid(row=3, sticky=tk.EW)
-        # Widggets
-        # Títol finestra
-        title_name = tk.Label(title_barframe, text="Financial Control", bg=back_ground, fg='white')
-        # Crea un botó per tancar a la barra de títol
-        close_button = tk.Button(close_frame, text='x', command=self.sw.destroy, bg=back_ground,
-                                 activebackground="red", bd=0, font="bold", fg='white',
-                                 activeforeground="white",
-                                 highlightthickness=0)
-        # Labels gestió excel
-        label_gestionant = tk.Label(gestio_frame, text=f'Gestionant despeses del mes', bg=back_ground,
-                                    fg='white', font=font.Font(family="Helvetica", size=15, weight="bold"),
-                                    padx=20, pady=15)
-        label_mes = tk.Label(gestio_frame, text=self.nom_fulla,
-                             font=font.Font(family="Helvetica", size=25, weight="bold"),
-                             padx=20, pady=10, bg=back_ground, fg='white')
-        # Barra inferior
-        nouconcepte = tk.Button(self.fbuttons, text="Nova classe i/o concepte", bg=back_ground, fg='white', command=self.newcategory)
-        tancar_finestra = tk.Button(self.fbuttons, text="Tanca", bg=back_ground, fg='white', command=self.sw.destroy)
-        # Grid widgets
-        title_name.grid(row=0, column=0, sticky=tk.NS)
-        close_button.grid(sticky=tk.NE)
-        label_gestionant.pack(fill=tk.X)
-        label_mes.pack(fill=tk.X)
-        nouconcepte.pack(side='left', pady=5, padx=5)
-        tancar_finestra.pack(side='right', pady=5, padx=5)
-
-        def move_window(event):
-            """Dotar de moviment a la finestra"""
-            self.sw.geometry('+{0}+{1}'.format(event.x_root, event.y_root))
-
-        def change_on_hovering(event):
-            """El botó canvia de color al passar per sobre"""
-            close_button.configure(bg='red')
-
-        def return_to_normal_state(event):
-            """El botó torna al seu estat inicial"""
-            close_button.configure(bg=back_ground)
-
-        title_barframe.bind('<B1-Motion>', move_window)
-        close_button.bind('<Enter>', change_on_hovering)
-        close_button.bind('<Leave>', return_to_normal_state)
-
         # Llista de conceptes sense classificar
         self.rows = []
         for j in range(2, self.ws_act.max_row + 1):
             if self.ws_act.cell(row=j, column=5).value is None:
                 self.rows.append(j)
-
-        # creació taula
+        # Creem la llista elements diccionari json
+        self.llista_clas = []
         with open('classificacio.json') as json_file:
             data = json.load(json_file)
             dic = data["classificacio"]
-        self.taula(dic)
+            for x in dic:
+                self.llista_clas.append(x)
+        if len(self.rows) > 0:
+            # Creem la segona pantalla
+            self.sw = tk.Tk()
+            self.sw.overrideredirect(True)
 
-        self.sw.mainloop()
+            # Configurar grid
+            self.sw.rowconfigure(0, weight=1)
+            self.sw.columnconfigure(0, weight=1)
+
+            self.amplada_finestra = 920
+            self.altura_finestra = 700
+            amplada_monitor = self.sw.winfo_screenwidth()
+            altura_monitor = self.sw.winfo_screenheight()
+            x = round(amplada_monitor / 2 - self.amplada_finestra / 2)
+            y = round((altura_monitor - 50) / 2 - self.altura_finestra / 2)
+
+            self.sw.geometry(f'{self.amplada_finestra}x{self.altura_finestra}+{x}+{y}')
+
+            # Frames
+            # Creem un frame general
+            self.frame_main = tk.Frame(self.sw, bg="gray", width=self.amplada_finestra, height=self.altura_finestra-50)
+            self.frame_main.grid(sticky=tk.NSEW)
+            # Crea un frame per a la barra nova de títol
+            back_ground = '#1d1d1d'
+            title_barframe = tk.Frame(self.frame_main, width=self.amplada_finestra, height=20, bg=back_ground,
+                                      relief='raised', bd=1,
+                                      pady=3, highlightcolor=back_ground, highlightthickness=0)
+            # crear frame per al botó tancar
+            close_frame = tk.Frame(self.frame_main, bg=back_ground, width=10, height=10, relief='raised', bd=1,
+                                   highlightcolor=back_ground, highlightthickness=0)
+            # Crea un frame gestió excel
+            gestio_frame = tk.Frame(self.frame_main, bg=back_ground)
+            # Creem un frame per al canvas que allotjarà la taula
+            self.canvas_frame = tk.Frame(self.frame_main, bg=back_ground)
+            # Crear frame botons barra inferior
+            self.fbuttons = tk.Frame(self.frame_main, bg=back_ground,width=self.amplada_finestra, height=20, pady=3)
+
+            # Grid Frames
+            title_barframe.grid(row=0, sticky=tk.EW)
+            close_frame.grid(row=0, sticky=tk.NE)
+            gestio_frame.grid(row=1, sticky=tk.EW)
+            self.canvas_frame.grid(row=2, column=0, sticky=tk.EW)
+            self.canvas_frame.rowconfigure(0, weight=1)
+            self.canvas_frame.columnconfigure(0, weight=1)
+            self.canvas_frame.grid_propagate(False)
+            self.fbuttons.grid(row=3, sticky=tk.EW)
+            # Widggets
+            # Títol finestra
+            title_name = tk.Label(title_barframe, text="Financial Control", bg=back_ground, fg='white')
+            # Crea un botó per tancar a la barra de títol
+            close_button = tk.Button(close_frame, text='x', command=self.sw.destroy, bg=back_ground,
+                                     activebackground="red", bd=0, font="bold", fg='white',
+                                     activeforeground="white",
+                                     highlightthickness=0)
+            # Labels gestió excel
+            label_gestionant = tk.Label(gestio_frame, text=f'Gestionant despeses del mes', bg=back_ground,
+                                        fg='white', font=font.Font(family="Helvetica", size=15, weight="bold"),
+                                        padx=20, pady=15)
+            label_mes = tk.Label(gestio_frame, text=self.nom_fulla,
+                                 font=font.Font(family="Helvetica", size=25, weight="bold"),
+                                 padx=20, pady=10, bg=back_ground, fg='white')
+            # Barra inferior
+            nouconcepte = tk.Button(self.fbuttons, text="Nova classe i/o concepte", bg=back_ground, fg='white', command=self.newcategory)
+            tancar_finestra = tk.Button(self.fbuttons, text="Tanca", bg=back_ground, fg='white', command=self.sw.destroy)
+            # Grid widgets
+            title_name.grid(row=0, column=0, sticky=tk.NS)
+            close_button.grid(sticky=tk.NE)
+            label_gestionant.pack(fill=tk.X)
+            label_mes.pack(fill=tk.X)
+            nouconcepte.pack(side='left', pady=5, padx=5)
+            tancar_finestra.pack(side='right', pady=5, padx=5)
+
+            def move_window(event):
+                """Dotar de moviment a la finestra"""
+                self.sw.geometry('+{0}+{1}'.format(event.x_root, event.y_root))
+
+            def change_on_hovering(event):
+                """El botó canvia de color al passar per sobre"""
+                close_button.configure(bg='red')
+
+            def return_to_normal_state(event):
+                """El botó torna al seu estat inicial"""
+                close_button.configure(bg=back_ground)
+
+            title_barframe.bind('<B1-Motion>', move_window)
+            close_button.bind('<Enter>', change_on_hovering)
+            close_button.bind('<Leave>', return_to_normal_state)
+
+            # creació taula
+            self.taula()
+
+            self.sw.mainloop()
+        else:
+            ##---------- missatge de tot ok ---------
+            print(f'tot fet a {self.ws_act}')
 
     def combiexcel(self, llista):
         """Afegeix els excels del banc a un de sol"""
         # Carreguem l'excel de comptes
-        self.ex_comptes = load_workbook('C:/Users/ferra/OneDrive/Tesla/Economia/EstatComptes.xlsx')
+        self.ex_comptes = load_workbook(startWindow.excelcomptes)
         for document in llista:
             # Carreguem l'excel del banc
             ex_caixa = load_workbook(document)
@@ -558,7 +572,6 @@ class secondWindow(startWindow):
                 ws2.auto_filter.add_sort_condition(f"B2:B{maxrow}")
 
                 # Taula resum
-                sheet1 = self.ex_comptes['Gener']
                 # Crear la taula a partir del diccionari
                 ws2['G2'] = "TAULA RESUM"
                 ws2['G3'] = "Classificació"
@@ -570,17 +583,14 @@ class secondWindow(startWindow):
                     ws2.cell(row=i, column=7).value = key_list[i - 4]
                     # El nom de l'operació excel ha de ser en ingles
                     ws2[f'H{i}'] = f'=SUMIF(E2:E{maxrow},G{i},C2:C{maxrow})'
-                # Fica la mateixa amplada de columna
-                for idx, rd in sheet1.column_dimensions.items():
-                    ws2.column_dimensions[idx] = copy(rd)
-                # Mateix format
-                for (row, col), source_cell in sheet1._cells.items():
-                    cell = ws2.cell(column=col, row=row)
-                    cell.font = copy(source_cell.font)
-                    cell.fill = copy(source_cell.fill)
-                    cell.border = copy(source_cell.border)
-                    cell.number_format = copy(source_cell.number_format)
-                    cell.alignment = copy(source_cell.alignment)
+                # amplada de columna
+                ws2.column_dimensions['A'].width = 20
+                ws2.column_dimensions['B'].width = 12
+                ws2.column_dimensions['C'].width = 15
+                ws2.column_dimensions['D'].width = 15
+                ws2.column_dimensions['E'].width = 20
+                ws2.column_dimensions['G'].width = 15
+                ws2.column_dimensions['H'].width = 15
                 # Format condicional
                 red_font = styles.Font(size=11, color='9c0006')
                 redFill = styles.PatternFill(bgColor='ffc7ce', fill_type='solid')
@@ -593,8 +603,27 @@ class secondWindow(startWindow):
                 ws2.merge_cells('G2:H2')
                 # Cel·la estalvis
                 ws2[f'H{num_files + 4}'] = f'=D{maxrow}-D2'
+                # Mateix format
+                thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'),
+                                     bottom=Side(style='thin'))
+                for r in ws2[f'G2:H{num_files + 4}']:
+                    for cell in r:
+                        cell.border = thin_border
+                for r in ws2[f'H4:H{num_files + 4}']:
+                    for cell in r:
+                        cell.number_format = '0.00€'
+                for r in ws2[f'C2:C{num_files + 4}']:
+                    for cell in r:
+                        cell.number_format = '0.00€'
+                for r in ws2[f'D2:D{num_files + 4}']:
+                    for cell in r:
+                        cell.number_format = '0.00€'
+                for r in ws2['G3:H3']:
+                    for cell in r:
+                        cell.font = Font(bold=True, size=11)
+                ws2['H3'].alignment = Alignment(horizontal="center")
 
-            self.ex_comptes.save(filename='C:/Users/ferra/OneDrive/Tesla/Economia/EstatComptes.xlsx')
+            self.ex_comptes.save(filename=startWindow.excelcomptes)
 
     def __init__(self, finestra1):
         """Inicialitza la segona finestra"""

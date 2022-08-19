@@ -6,7 +6,8 @@
         ],
         "Bizum": [
             "movil",
-            "bizum"
+            "bizum",
+            "verse"
         ],
         "Compres": [
             "ikea",
@@ -24,7 +25,22 @@
             "calzedonia",
             "digitalri",
             "virtualco",
-            "asia"
+            "asia",
+            "papeleria",
+            "google ti",
+            "idesign",
+            "ebremarket",
+            "sfam",
+            "hubside",
+            "tezenis",
+            "pull and bear",
+            "springfield",
+            "google ba",
+            "portaventura",
+            "google an",
+            "cines",
+            "societe franc",
+            "politecn"
         ],
         "Donacions": [
             "impulsat"
@@ -37,6 +53,10 @@
             "nomina",
             "pies desti"
         ],
+        "Inversió": [
+            "coinbase",
+            "trading"
+        ],
         "Menja": [
             "fruites",
             "verdures",
@@ -44,7 +64,9 @@
             "bon area",
             "hipermercat",
             "mercadona",
-            "quatre camins"
+            "quatre camins",
+            "condis",
+            "la sirena"
         ],
         "Parking": [
             "cons."
@@ -74,11 +96,23 @@
             "ue remolins",
             "green way",
             "gelateria",
-            "siurana"
+            "siurana",
+            "deliveroo",
+            "classic bakery",
+            "fujiyama",
+            "dominos pizza",
+            "panaderia alqueza",
+            "doner",
+            "rainbow",
+            "botanic",
+            "matuya",
+            "mussol",
+            "masedy"
         ],
         "Sanitat": [
             "farmacia",
-            "clinident"
+            "clinident",
+            "optica univ"
         ],
         "Subscripcions": [
             "google go",
@@ -87,17 +121,22 @@
             "mastermind",
             "amazon prime",
             "microsoft",
-            "avinguda madr."
+            "avinguda madr.",
+            "dir"
         ],
         "Tesla": [
-            "tesla"
+            "tesla",
+            "applus iteuve"
         ],
         "Transport": [
             "tmb",
             "supeco",
             "tamoil",
             "via t",
-            "taxi"
+            "taxi",
+            "a.c.e.s.a",
+            "venta billetes",
+            "hife"
         ]
     },
     "mes": {
