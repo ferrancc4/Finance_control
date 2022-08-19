@@ -571,7 +571,7 @@ class secondWindow(startWindow):
                 ws2.auto_filter.add_filter_column(5, ["Menja", "Compres", "Transport"])
                 ws2.auto_filter.add_sort_condition(f"B2:B{maxrow}")
 
-                # Taula resum
+                # Taula resum mes
                 # Crear la taula a partir del diccionari
                 ws2['G2'] = "TAULA RESUM"
                 ws2['G3'] = "Classificació"
@@ -612,16 +612,77 @@ class secondWindow(startWindow):
                 for r in ws2[f'H4:H{num_files + 4}']:
                     for cell in r:
                         cell.number_format = '0.00€'
-                for r in ws2[f'C2:C{num_files + 4}']:
+                for r in ws2[f'C2:C{maxrow}']:
                     for cell in r:
                         cell.number_format = '0.00€'
-                for r in ws2[f'D2:D{num_files + 4}']:
+                for r in ws2[f'D2:D{maxrow}']:
                     for cell in r:
                         cell.number_format = '0.00€'
-                for r in ws2['G3:H3']:
+                for r in ws2['G2:H3']:
                     for cell in r:
                         cell.font = Font(bold=True, size=11)
                 ws2['H3'].alignment = Alignment(horizontal="center")
+
+            # Taula resum mes
+            # Crear la taula a partir del diccionari
+
+            fulles = self.ex_comptes.sheetnames
+            if "Sheet" in fulles:
+                del self.ex_comptes['Sheet']
+            if "Resum" not in fulles:
+                self.ex_comptes.create_sheet('Resum')
+            else:
+                fulles.remove("Resum")
+            resum = self.ex_comptes.active = self.ex_comptes['Resum']
+            resum['B2'] = "TAULA RESUM"
+            resum['B3'] = "Classificació"
+            resum['C3'] = "€"
+            # Creem la llista elements diccionari json
+            llista_clas = []
+            with open('classificacio.json') as json_file:
+                data = json.load(json_file)
+                dic = data["classificacio"]
+                for x in dic:
+                    llista_clas.append(x)
+            num_files = len(llista_clas)
+            resum[f'B{num_files + 4}'] = "Estalvis"
+            for i in range(4, num_files + 4):
+                resum.cell(row=i, column=2).value = llista_clas[i - 4]
+            for i in range(4, num_files + 5):
+                formula = ''
+                for fulla in fulles:
+                    formula += '+' + f'{fulla}!H{i}'
+                    formula2 = f'={formula}'
+                    resum[f'C{i}'] = formula2
+            # amplada de columna
+            resum.column_dimensions['B'].width = 15
+            resum.column_dimensions['C'].width = 15
+            # Format condicional
+            red_font = styles.Font(size=11, color='9c0006')
+            redFill = styles.PatternFill(bgColor='ffc7ce', fill_type='solid')
+            greenFill = styles.PatternFill(bgColor='c6efce', fill_type='solid')
+            green_font = styles.Font(size=11, color='006100')
+            resum.conditional_formatting.add(f'C4:C{num_files + 4}',
+                                             CellIsRule(operator='lessThan', formula=['0'], stopIfTrue=True,
+                                                        fill=redFill, font=red_font))
+            resum.conditional_formatting.add(f'C4:C{num_files + 4}',
+                                             CellIsRule(operator='greaterThan', formula=['0'], stopIfTrue=True,
+                                                        fill=greenFill, font=green_font))
+            resum.merge_cells('B2:C2')
+            # Mateix format
+            thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'),
+                                 bottom=Side(style='thin'))
+            for r in resum[f'B2:C{num_files + 4}']:
+                for cell in r:
+                    cell.border = thin_border
+            for r in resum[f'C4:C{num_files + 4}']:
+                for cell in r:
+                    cell.number_format = '0.00€'
+            for r in resum['B2:C3']:
+                for cell in r:
+                    cell.font = Font(bold=True, size=11)
+            resum['C3'].alignment = Alignment(horizontal="center")
+            resum['B2'].alignment = Alignment(horizontal="center")
 
             self.ex_comptes.save(filename=startWindow.excelcomptes)
 
