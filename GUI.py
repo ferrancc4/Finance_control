@@ -154,15 +154,17 @@ class startWindow:
         elif os.path.exists(startWindow.carpeta):
             llista_comptes = glob.glob('C:/Users/ferra/OneDrive/Comptes/*.xlsx')
             any = self.entry_any.get()
-            for xls in llista_comptes:
-                if any in xls:
-                    startWindow.excelcomptes = xls
-                else:
-                    nou_excel = Workbook()
-                    nou_excel.save(filename=f'C:/Users/ferra/OneDrive/Comptes/Comptes_{any}.xlsx')
-                    startWindow.excelcomptes = f'C:/Users/ferra/OneDrive/Comptes/Comptes_{any}.xlsx'
-            self.arrel.destroy()
-            secondWindow(startWindow)
+            esta = False
+            for xl in llista_comptes:
+                if any in xl:
+                    esta = True
+                    startWindow.excelcomptes = xl
+            if not esta:
+                nou_excel = Workbook()
+                nou_excel.save(filename=f'C:/Users/ferra/OneDrive/Comptes/Comptes_{any}.xlsx')
+                startWindow.excelcomptes = f'C:/Users/ferra/OneDrive/Comptes/Comptes_{any}.xlsx'
+        self.arrel.destroy()
+        secondWindow(startWindow)
 
 
 class secondWindow(startWindow):
@@ -503,8 +505,7 @@ class secondWindow(startWindow):
 
             self.sw.mainloop()
         else:
-            ##---------- missatge de tot ok ---------
-            print(f'tot fet a {self.ws_act}')
+            messagebox.showinfo("Classificació conceptes", f"Tots els conceptes {self.nom_fulla} classificats")
 
     def combiexcel(self, llista):
         """Afegeix els excels del banc a un de sol"""
@@ -627,7 +628,7 @@ class secondWindow(startWindow):
                         cell.font = Font(bold=True, size=11)
                 ws2['H3'].alignment = Alignment(horizontal="center")
 
-            # Taula resum mes
+            # Taula resum any
             # Crear la taula a partir del diccionari
 
             fulles = self.ex_comptes.sheetnames
@@ -641,6 +642,7 @@ class secondWindow(startWindow):
             resum['B2'] = "TAULA RESUM"
             resum['B3'] = "Classificació"
             resum['C3'] = "€"
+            resum['D3'] = "Mitjana mensual"
             # Creem la llista elements diccionari json
             llista_clas = []
             with open('classificacio.json') as json_file:
@@ -658,9 +660,11 @@ class secondWindow(startWindow):
                     formula += '+' + f'{fulla}!H{i}'
                     formula2 = f'={formula}'
                     resum[f'C{i}'] = formula2
+                resum[f'D{i}'] = f'=C{i}/{len(fulles)}'
             # amplada de columna
             resum.column_dimensions['B'].width = 15
             resum.column_dimensions['C'].width = 15
+            resum.column_dimensions['D'].width = 20
             # Format condicional
             red_font = styles.Font(size=11, color='9c0006')
             redFill = styles.PatternFill(bgColor='ffc7ce', fill_type='solid')
@@ -672,23 +676,31 @@ class secondWindow(startWindow):
             resum.conditional_formatting.add(f'C4:C{num_files + 4}',
                                              CellIsRule(operator='greaterThan', formula=['0'], stopIfTrue=True,
                                                         fill=greenFill, font=green_font))
-            resum.merge_cells('B2:C2')
+            resum.conditional_formatting.add(f'D4:D{num_files + 4}',
+                                             CellIsRule(operator='lessThan', formula=['0'], stopIfTrue=True,
+                                                        fill=redFill, font=red_font))
+            resum.conditional_formatting.add(f'D4:D{num_files + 4}',
+                                             CellIsRule(operator='greaterThan', formula=['0'], stopIfTrue=True,
+                                                        fill=greenFill, font=green_font))
+            resum.merge_cells('B2:D2')
             # Mateix format
             thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'),
                                  bottom=Side(style='thin'))
-            for r in resum[f'B2:C{num_files + 4}']:
+            for r in resum[f'B2:D{num_files + 4}']:
                 for cell in r:
                     cell.border = thin_border
-            for r in resum[f'C4:C{num_files + 4}']:
+            for r in resum[f'C4:D{num_files + 4}']:
                 for cell in r:
                     cell.number_format = '0.00€'
-            for r in resum['B2:C3']:
+            for r in resum['B2:D3']:
                 for cell in r:
                     cell.font = Font(bold=True, size=11)
             resum['C3'].alignment = Alignment(horizontal="center")
             resum['B2'].alignment = Alignment(horizontal="center")
+            resum['D3'].alignment = Alignment(horizontal="center")
 
             self.ex_comptes.save(filename=startWindow.excelcomptes)
+        messagebox.showinfo("Classificació conceptes", "Ha finalitzat el procés")
 
     def __init__(self, finestra1):
         """Inicialitza la segona finestra"""
