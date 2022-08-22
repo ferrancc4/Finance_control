@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+import os
 import glob
 import tkinter as tk
-from tkinter import ttk, filedialog
+from tkinter import ttk, filedialog, messagebox
 import tkinter.font as font
 from openpyxl import Workbook, load_workbook, styles
 from openpyxl.styles import Font
@@ -145,20 +146,23 @@ class startWindow:
 
     def next_window(self):
         """Sel·lecciona l'excel del any o el crea, tanca la primera finestra i obre la següent"""
-        any = self.entry_any.get()
-        llista_comptes = glob.glob('C:/Users/ferra/OneDrive/Comptes/*.xlsx')
-        for xls in llista_comptes:
-            if any in xls:
-                startWindow.excelcomptes = xls
-            else:
-                nou_excel = Workbook()
-                nou_excel.save(filename=f'C:/Users/ferra/OneDrive/Comptes/Comptes_{any}.xlsx')
-                startWindow.excelcomptes = f'C:/Users/ferra/OneDrive/Comptes/Comptes_{any}.xlsx'
-
-        ## -----Implementar error de carpeta----------
         startWindow.carpeta = self.carpeta.get()
-        self.arrel.destroy()
-        secondWindow(startWindow)
+        if startWindow.carpeta == "":
+            messagebox.showerror('Error de carpeta', "No ha sel·leccionat cap carpeta")
+        elif not os.path.exists(startWindow.carpeta):
+            messagebox.showerror('Error de carpeta', "No exiteix aquesta carpeta")
+        elif os.path.exists(startWindow.carpeta):
+            llista_comptes = glob.glob('C:/Users/ferra/OneDrive/Comptes/*.xlsx')
+            any = self.entry_any.get()
+            for xls in llista_comptes:
+                if any in xls:
+                    startWindow.excelcomptes = xls
+                else:
+                    nou_excel = Workbook()
+                    nou_excel.save(filename=f'C:/Users/ferra/OneDrive/Comptes/Comptes_{any}.xlsx')
+                    startWindow.excelcomptes = f'C:/Users/ferra/OneDrive/Comptes/Comptes_{any}.xlsx'
+            self.arrel.destroy()
+            secondWindow(startWindow)
 
 
 class secondWindow(startWindow):
